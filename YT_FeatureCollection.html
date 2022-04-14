@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>adding markers to web map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js">  </script>
+
+<!--adding in super secret ajax magic -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!--creating our map area -->
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    //I'll need to add my token 
+	mapboxgl.accessToken = 'YOUR TOKEN HERE';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        
+        //fix this on texas pls
+        center: [-97.644186,30.300268],
+        zoom: 9
+    });
+//creating an empty feature collection
+var mapData ={} 
+
+//adjusting the limit (using this for our current example - might need to adjust in the future)
+var limit = 1
+
+//an empty array to fill with data, this is what is going to hold our formatted data
+var PetData = [];
+     
+$.ajax({     
+  url: "https://data.austintexas.gov/resource/hye6-gvq2.json",
+  type: "GET",
+  
+  data: {
+        "$limit" : limit,
+        "$$app_token" : "YOUR TOKEN HERE"
+       }}).success(function (data) {
+        console.log(data)
+        //editing the data return - setting a type of data 
+        mapData.type ='FeatureCollection';
+        
+
+        // a for loop for format the data return - we want to do 2 things each time a new pet
+        // is found in our dataset 1. a new lat lon 2. Push the pet data, formattted to our new array 
+        for (i=0; i<limit; i++){
+          
+          //creating new lat and lon data 
+          var lon = data[i].location.longitude;
+          var lat = data[i].location.latitude;
+          //creating the new mapbox LngLat constant 
+          const ll = new mapboxgl.LngLat(lon, lat);
+          
+          //pushing the data to our array (still part of the for loop)
+          PetData.push(        
+                //formatting based on mapbox Feature Collection
+                // look at https://geojsonlint.com/ for help with formatting 
+                mapData.features ={
+                  'type':'Feature',
+                  'properties':{"Name":data[i].animal_id,"Address":data[i].location.human_address},
+                  //'Featuret':data[i],
+                  'geometry':{ "type": "Point", "coordinates": [ll.lng,ll.lat] }
+                })
+        }; 
+        mapData.features = PetData
+        
+//console.log(data)
+//console.log(mapData)
+//console.log (data[i].location.latitude)      
+//console.log (mapData.feature.location.latitude);
+
+//creating a new Feature Collection const for off leash areas 
+// data here: https://data.austintexas.gov/Locations-and-Maps/Off-Leash-Areas/iyf6-bziq
+const pets = {mapData};
+const axt_off_leash_areas = {
+"type": "FeatureCollection",
+"features": [
+  {"type":"Feature","properties":{"descriptio":"<DIV>920 W Riverside Dr.</DIV> <DIV>Austin, TX 78704<BR><IMG src=\"http://cbk0.go","name":"Auditorium Shores"},"geometry":{"type":"Point","coordinates":[-97.755943,30.26424]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>5909 Crystalbrook Dr</DIV> <DIV>Austin, TX 78724<BR><IMG src=\"http://cbk0.g","name":"Davis White Northeast District Park"},"geometry":{"type":"Point","coordinates":[-97.652878,30.302725]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>1600 City Park Rd</DIV> <DIV>Austin, TX 78730<BR><IMG src=\"http://cbk0.goog","name":"Emma Long Metropolitan Park"},"geometry":{"type":"Point","coordinates":[-97.838501,30.335217]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>7001 Onion Creek Dr</DIV> <DIV>Austin, TX 78744<BR><IMG src=\"http://cbk0.go","name":"Onion Creek District Park"},"geometry":{"type":"Point","coordinates":[-97.743599,30.171667]}},
+  {"type":"Feature","properties":{"descriptio":"<div dir=\"ltr\">2600-2799 Lamar Blvd. <br>Austin, TX</div>","name":"Shoal Creek Greenbelt"},"geometry":{"type":"Point","coordinates":[-97.748955,30.295168]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>1317 W 10th St</DIV> <DIV>Austin, TX 78703<BR><IMG src=\"http://cbk0.google.","name":"West Austin Park"},"geometry":{"type":"Point","coordinates":[-97.757111,30.277468]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>12138 N Lamar Blvd</DIV> <DIV>Austin, TX 78753<BR><IMG src=\"http://cbk0.goo","name":"Walnut Creek District Park"},"geometry":{"type":"Point","coordinates":[-97.679832,30.398497]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>2100 Barton Springs Rd</DIV> <DIV>Austin, TX 78704<BR><IMG src=\"http://cbk0","name":"Zilker Park"},"geometry":{"type":"Point","coordinates":[-97.769638,30.263988]}},
+  {"type":"Feature","properties":{"descriptio":"<DIV>3401 Redbud Trail Unit Cr.</DIV> <DIV>Austin, TX<BR><IMG src=\"http://cbk0.g","name":"Red Bud Isle"},"geometry":{"type":"Point","coordinates":[-97.801483,30.295906]}},
+  {"type":"Feature","properties":{"descriptio":"6916 Great Northern Blvd.<br>Austin, TX 78757<br><a href=\"https://maps.google.co","name":"Far West"},"geometry":{"type":"Point","coordinates":[-97.74794,30.350876]}},
+  {"type":"Feature","properties":{"descriptio":"907 W Slaughter Ln<br>Austin, TX 78748<br><a href=\"https://maps.google.com/maps/","name":"Mary Moore Searight Metro Park"},"geometry":{"type":"Point","coordinates":[-97.806038,30.173923]}},
+  {"type":"Feature","properties":{"descriptio":"1009 Edgecliff Terrace<br>Austin, TX 78704<br><a href=\"https://maps.google.com/m","name":"Norwood Tract at Town Lake Metro Park"},"geometry":{"type":"Point","coordinates":[-97.737854,30.249901]}}]
+}
+
+
+//console.log(axt_off_leash_areas)
+
+//code to add lost pets to the map
+
+//loading the map
+map.on('load',()=>{
+
+//adding the pet layer 
+map.addLayer({
+  id: 'pets',
+    type: 'symbol',
+    source: {
+      type: 'geojson',
+      data: mapData
+    },
+    layout: {
+      //see https://github.com/mapbox/mapbox-gl-styles for more styles 
+      'icon-image': 'dog-park-15',
+      'icon-allow-overlap': true
+    },
+    paint: {},
+
+  
+});
+//adding the off leash areas to the map 
+map.addLayer({
+  id: 'off_leash',
+    type: 'symbol',
+    source: {
+      type: 'geojson',
+      data: axt_off_leash_areas
+    },
+    layout: {
+      //see https://github.com/mapbox/mapbox-gl-styles for more styles 
+      'icon-image': 'park-11',
+      'icon-allow-overlap': true
+    },
+    paint: {},
+});
+
+//adding the map popup, we can customize these as much as we want later. 
+const popup = new mapboxgl.Popup();
+
+map.on('mousemove', (event) => {
+  const features = map.queryRenderedFeatures(event.point, {
+    layers: ['pets', 'off_leash']
+  });
+  if (!features.length) {
+    popup.remove();
+    return;
+  }
+  const feature = features[0];
+
+  popup
+    .setLngLat(feature.geometry.coordinates)
+    .setHTML(feature.properties.descriptio)
+    .addTo(map);
+
+  map.getCanvas().style.cursor = features.length ? 'pointer' : '';
+});
+
+
+  
+});
+
+//adding a new source for the nearest off leash areas
+map.addSource('nearest-off', {
+  type: 'geojson',
+  data: {
+    type: 'FeatureCollection',
+    features: []
+  }
+});
+
+//adding the "on click" function
+map.on('click', (event) => {
+
+  // Return any features from the 'lost pets' layer whenever the map is clicked
+  const petFeatures = map.queryRenderedFeatures(event.point, {
+    layers: ['pets']
+  });
+  if (!petFeatures.length) {
+    return;
+  }
+  const petFeature = petFeatures[0];
+
+  // Using Turf, find the nearest off leash area to found lost pet
+  const nearestOff = turf.nearest(petFeature, axt_off_leash_areas);
+
+  // If a nearest off leash areais not found, return early
+  if (nearestOff === null) return;
+
+  // Update the nearest off leash area data source to include
+  // the nearest off leash area
+  map.getSource('nearest-off').setData({
+    type: 'FeatureCollection',
+    features: [nearestOff]
+  });
+
+  // Create a new circle layer from the nearest off leash area data source
+  if (map.getLayer('nearest-off')) {
+    map.removeLayer('nearest-off');
+  }
+  map.addLayer(
+    {
+      id: 'nearest-off',
+      type: 'circle',
+      source: 'nearest-off',
+      paint: {
+        'circle-radius': 12,
+        'circle-color': '#486DE0'
+      }
+    },
+    'off_leash'
+  );
+});
+
+
+
+
+
+       });
+
+
+
+</script>
+
+</body>
+</html>
