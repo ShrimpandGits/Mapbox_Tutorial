@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>adding markers to web map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js">  </script>
+
+<!--adding in super secret ajax magic -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!--creating our map area -->
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    //I'll need to add my token 
+	mapboxgl.accessToken = 'YOUR TOKEN HERE';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        
+        //fix this on texas pls
+        center: [-97.644186,30.300268],
+        zoom: 9
+    });
+
+    var mapData ={} 
+$.ajax({     
+  url: "https://data.austintexas.gov/resource/hye6-gvq2.json",
+  type: "GET",
+  data: {
+        "$limit" : 2,
+        "$$app_token" : "YOUR TOKEN HERE"
+       }}).success(function (data) {
+mapData = (data);
+
+//in the 
+var lat = mapData[0].location.latitude;
+var lon = mapData[0].location.longitude;
+
+console.log(lat);
+console.log(lon);
+//create a new lon lat using the LngLat property 
+const ll = new mapboxgl.LngLat(lon, lat);
+console.log(ll); // = -123.9749
+
+    // Create a default Marker and add it to the map.
+    const marker1 = new mapboxgl.Marker()
+        .setLngLat([12.554729, 55.70651])
+        .addTo(map);
+
+    //Lets see if we can fill this from the pet data 
+    const petMarker = new mapboxgl.Marker().setLngLat(ll)
+    .addTo(map);
+});
+
+</script>
+
+</body>
+</html>
